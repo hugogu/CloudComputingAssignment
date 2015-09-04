@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.Integer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -149,7 +150,7 @@ public class TopTitleStatistics extends Configured implements Tool {
 
     public static class TopTitlesStatMap extends Mapper<Text, Text, NullWritable, TextArrayWritable> {
         Integer N;
-        // TODO
+        private TreeSet<Pair<Integer, String>> countToWordMap = new TreeSet<Pair<Integer, String>>();
 
         @Override
         protected void setup(Context context) throws IOException,InterruptedException {
@@ -159,12 +160,23 @@ public class TopTitleStatistics extends Configured implements Tool {
 
         @Override
         public void map(Text key, Text value, Context context) throws IOException, InterruptedException {
-            // TODO
+            final String word = key.toString();
+            final Integer count = Integer.parseInt(value.toString());
+            final Pair<Integer, String> pair = new Pair<Integer, String>(count, word);
+            
+            countToWordMap.add(pair);
+            
+            if (countToWordMap.size() > this.N)
+                countToWordMap.remove(countToWordMap.first());
         }
 
         @Override
         protected void cleanup(Context context) throws IOException, InterruptedException {
-            // TODO
+            for(Pair<Integer, String> item : countToWordMap) {
+                String[] strings = {item.second, item.first.toString()};
+                TextArrayWritable val = new TextArrayWritable(strings);
+                context.write(NullWritable.get(), val);
+            }
         }
     }
 
@@ -180,15 +192,40 @@ public class TopTitleStatistics extends Configured implements Tool {
 
         @Override
         public void reduce(NullWritable key, Iterable<TextArrayWritable> values, Context context) throws IOException, InterruptedException {
-            Integer sum, mean, max, min, var;
+            int sum = 0, max = Integer.MIN_VALUE, min = Integer.MAX_VALUE, var = 0;
+            int size = 1;
+            double mean = 0;
+            
+            final List<Integer> counts = new ArrayList<Integer>();
 
-            // TODO
+            for (TextArrayWritable val: values) {
+                Text[] pair= (Text[]) val.toArray();
 
-            context.write(new Text("Mean"), new IntWritable(mean));
+                String word = pair[0].toString();
+                int count = Integer.parseInt(pair[1].toString());
+
+                if (count < min) {
+                    min = count;
+                }
+                if (count > max) {
+                    max = count;
+                }
+                sum = sum + count;
+                mean = sum * 1.0 / size;
+                size++;
+                counts.add(count);
+            }
+            
+            double varSum = 0;
+            for (Integer value : counts) {
+                varSum = varSum + Math.abs(value - mean) * Math.abs(value - mean);
+            }
+
+            context.write(new Text("Mean"), new IntWritable((int) Math.ceil(mean)));
             context.write(new Text("Sum"), new IntWritable(sum));
             context.write(new Text("Min"), new IntWritable(min));
             context.write(new Text("Max"), new IntWritable(max));
-            context.write(new Text("Var"), new IntWritable(var));
+            context.write(new Text("Var"), new IntWritable((int) Math.ceil(varSum / size)));
         }
     }
 
