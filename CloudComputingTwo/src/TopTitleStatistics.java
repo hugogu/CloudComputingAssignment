@@ -215,6 +215,7 @@ public class TopTitleStatistics extends Configured implements Tool {
                 size++;
                 counts.add(count);
             }
+            size--;
             
             double varSum = 0;
             for (Integer value : counts) {
