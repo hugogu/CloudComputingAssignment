@@ -54,6 +54,7 @@ public class OrphanPages extends Configured implements Tool {
                 final int link = Integer.parseInt(tokenizer.nextToken().trim());
                 context.write(new IntWritable(link), new IntWritable(id));
             }
+            context.write(new IntWritable(id), new IntWritable(-1));
         }
     }
 
@@ -62,7 +63,9 @@ public class OrphanPages extends Configured implements Tool {
         public void reduce(IntWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
             int count = 0;
             for(final IntWritable value : values) {
-                count++;
+                if (value.get() != -1) {
+                    count++;
+                }
             }
             if (count == 0) {
                 context.write(key, NullWritable.get());
