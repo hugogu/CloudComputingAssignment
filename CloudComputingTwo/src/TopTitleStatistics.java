@@ -216,7 +216,7 @@ public class TopTitleStatistics extends Configured implements Tool {
                 counts.add(count);
             }
             size--;
-            int meanInt = (int)Math.ceil(mean);
+            int meanInt = (int)Math.floor(mean);
             int varSum = 0;
             for (final Integer value : counts) {
                 varSum = varSum + (value - meanInt) * (value - meanInt);
@@ -226,7 +226,7 @@ public class TopTitleStatistics extends Configured implements Tool {
             context.write(new Text("Sum"), new IntWritable(sum));
             context.write(new Text("Min"), new IntWritable(min));
             context.write(new Text("Max"), new IntWritable(max));
-            context.write(new Text("Var"), new IntWritable((int) Math.ceil(varSum / size)));
+            context.write(new Text("Var"), new IntWritable((int) Math.floor(varSum / size)));
         }
     }
 }
