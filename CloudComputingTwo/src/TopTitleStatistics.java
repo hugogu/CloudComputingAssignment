@@ -182,7 +182,7 @@ public class TopTitleStatistics extends Configured implements Tool {
 
     public static class TopTitlesStatReduce extends Reducer<NullWritable, TextArrayWritable, Text, IntWritable> {
         Integer N;
-        // TODO
+        // TODO:
 
         @Override
         protected void setup(Context context) throws IOException,InterruptedException {
@@ -216,20 +216,19 @@ public class TopTitleStatistics extends Configured implements Tool {
                 counts.add(count);
             }
             size--;
-            
-            double varSum = 0;
-            for (Integer value : counts) {
-                varSum = varSum + Math.abs(value - mean) * Math.abs(value - mean);
+            int meanInt = (int)Math.ceil(mean);
+            int varSum = 0;
+            for (final Integer value : counts) {
+                varSum = varSum + (value - meanInt) * (value - meanInt);
             }
 
-            context.write(new Text("Mean"), new IntWritable((int) Math.ceil(mean)));
+            context.write(new Text("Mean"), new IntWritable(meanInt));
             context.write(new Text("Sum"), new IntWritable(sum));
             context.write(new Text("Min"), new IntWritable(min));
             context.write(new Text("Max"), new IntWritable(max));
             context.write(new Text("Var"), new IntWritable((int) Math.ceil(varSum / size)));
         }
     }
-
 }
 
 // >>> Don't Change
