@@ -20,51 +20,42 @@ public class FileReaderSpout implements IRichSpout {
   public void open(Map conf, TopologyContext context,
                    SpoutOutputCollector collector) {
 
-     /*
-    ----------------------TODO-----------------------
-    Task: initialize the file reader
-
-
-    ------------------------------------------------- */
-
+    final String fileName = (String)conf.get("datafile");
+      try {
+          final FileReader reader = new FileReader(fileName);
+          final BufferedReader bufferedReader = new BufferedReader(reader);
+          context.setTaskData("reader", bufferedReader);
+      } catch (FileNotFoundException ex) {
+      }
+    
     this.context = context;
     this._collector = collector;
   }
 
   @Override
   public void nextTuple() {
-
-     /*
-    ----------------------TODO-----------------------
-    Task:
-    1. read the next line and emmit a tuple for it
-    2. don't forget to add a small sleep
-
-    ------------------------------------------------- */
-
-
+      final BufferedReader reader = (BufferedReader)this.context.getTaskData("reader");
+      final String line;
+      try {
+          line = reader.readLine();
+          if (line != null)
+              _collector.emit(new Values(line));
+      } catch (IOException ex) {
+      }
   }
 
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-
-    /*
-    ----------------------TODO-----------------------
-    Task: define the declarer
-
-
-    ------------------------------------------------- */
-
+    declarer.declare(new Fields("word"));
   }
 
   @Override
   public void close() {
-   /*
-    ----------------------TODO-----------------------
-    Task: close the file
-
-
-    ------------------------------------------------- */
+    final BufferedReader reader = (BufferedReader)this.context.getTaskData("reader");
+      try {
+          reader.close();
+      } catch (IOException ex) {
+      }
   }
 
 
