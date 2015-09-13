@@ -39,7 +39,7 @@ class MP3(CourseraSubmission):
         return json.dumps(ret)
 
     def output(self, part_index):
-        return self.get_file_content(self.files_results[part_index])
+        return self.get_file_content(self.files_results[part_index])[:400*1024]
 
     def is_enabled(self, part_index):
         ret = True
