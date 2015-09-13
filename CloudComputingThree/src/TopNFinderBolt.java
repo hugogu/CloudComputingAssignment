@@ -6,6 +6,8 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 /**
  * a bolt that finds the top n words.
@@ -23,14 +25,27 @@ public class TopNFinderBolt extends BaseBasicBolt {
 
   @Override
   public void execute(Tuple tuple, BasicOutputCollector collector) {
- /*
-    ----------------------TODO-----------------------
-    Task: keep track of the top N words
-
-
-    ------------------------------------------------- */
-
-
+    final String word = tuple.getString(0);
+    final Integer count = tuple.getInteger(1);
+    
+    if (currentTopWords.size() < this.N) {
+        currentTopWords.put(word, count);
+    } else {
+        final Iterator<Entry<String, Integer>> iterator = currentTopWords.entrySet().iterator();
+        boolean findSmallerEntry = false;
+        while (iterator.hasNext()) {
+            final Entry<String, Integer> entry = iterator.next();
+            if (entry.getValue() < count) {
+                iterator.remove();
+                findSmallerEntry = true;
+                break;
+            }
+        }
+        if (findSmallerEntry) {
+            currentTopWords.put(word, count);
+        }
+    }
+      
     //reports the top N words periodically
     if (System.currentTimeMillis() - lastReportTime >= intervalToReport) {
       collector.emit(new Values(printMap()));
@@ -40,13 +55,7 @@ public class TopNFinderBolt extends BaseBasicBolt {
 
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-   /*
-    ----------------------TODO-----------------------
-    Task: define the declarer
-
-
-    ------------------------------------------------- */
-
+   declarer.declare(new Fields("top-words"));
   }
 
   public String printMap() {
