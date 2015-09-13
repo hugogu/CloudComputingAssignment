@@ -40,7 +40,7 @@ public class TopWordFinderTopologyPartC {
     cluster.submitTopology("word-count", config, builder.createTopology());
 
     //wait till the file is read completely
-    Thread.sleep(10 * 60 * 1000);
+    Thread.sleep(2 * 60 * 1000);
 
     cluster.shutdown();
   }
