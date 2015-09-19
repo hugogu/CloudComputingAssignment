@@ -35,7 +35,8 @@ public class SuperTable {
 
         final Scan scan = new Scan();
         scan.addColumn(Bytes.toBytes("personal"), Bytes.toBytes("hero"));
-        final ResultScanner scanner = table.getScanner(scan);
+        final HTable scanTable = new HTable(con, "powers");
+        final ResultScanner scanner = scanTable.getScanner(scan);
         for (Result result : scanner) {
             System.out.println(result);
         }
